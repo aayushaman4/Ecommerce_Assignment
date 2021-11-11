@@ -6,7 +6,11 @@ from math import ceil
 import json
 from django.contrib.auth.models import User
 from django.contrib.auth  import authenticate,  login, logout
-
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import serializers, status
+from .serializers import ProductSerializer
+from rest_framework.decorators import api_view
 
 # Create your views here.
 
@@ -143,3 +147,42 @@ def Logout(request):
     logout(request)
     messages.success(request, "Successfully logged out")
     return redirect('/login')
+
+
+@api_view(['GET'])
+def ProductList(request):
+    products = Product.objects.all()
+    serializer = ProductSerializer(products, many = True)
+    return Response(serializer.data)
+
+@api_view(['GET'])
+def ProductDetail(request,pk):
+    product = Product.objects.get(id=pk)
+    serializer = ProductSerializer(product, many = False)
+    return Response(serializer.data)
+
+@api_view(['POST'])
+def CreateProduct(request):
+    serializer = ProductSerializer(data=request.data)
+    if serializer.is_valid(raise_exception=True):
+        serializer.save()
+        new_data = serializer.data
+        return Response(new_data)
+
+@api_view(['POST'])
+def updateProduct(request, pk):
+    product = Product.objects.get(id=pk)
+    serializer = ProductSerializer(instance=product, data=request.data)
+    if serializer.is_valid(raise_exception=True):
+        serializer.save()
+        new_data = serializer.data
+        return Response(new_data)
+
+
+@api_view(['GET'])
+def deleteProduct(request, pk):
+    product = Product.objects.get(id=pk)
+    product.delete()
+
+    return Response('Items delete successfully!')
+    
