@@ -11,7 +11,6 @@ class Product(models.Model):
     desc=models.CharField(max_length=300)
     pub_date=models.DateField()
     image= models.ImageField(upload_to="shop/images",default="")
-
     def __str__(self):
         return self.product_name
 
@@ -53,3 +52,9 @@ class Profile(models.Model):
     
     def __str__(self):
         return str(self.user)
+
+class Ip(models.Model):
+    ip = models.GenericIPAddressField(null=True)
+
+    def __str__(self):
+        return str(self.ip)

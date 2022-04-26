@@ -1,18 +1,79 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from django.contrib import messages
-from .models import Product, Contact, Orders, OrderUpdate
+from .models import Product, Contact, Orders, OrderUpdate, Ip
 from math import ceil
 import json
 from django.contrib.auth.models import User
 from django.contrib.auth  import authenticate,  login, logout
 from rest_framework.views import APIView
+from rest_framework import viewsets, generics
 from rest_framework.response import Response
 from rest_framework import serializers, status
-from .serializers import ProductSerializer
+from .serializers import ProductSerializer, IpSerializer
 from rest_framework.decorators import api_view
+from rest_framework.permissions import IsAdminUser , AllowAny
 
 # Create your views here.
+
+# class IpViewset(APIView):
+
+#     serializer_class = IpSerializer
+#     queryset = Ip.objects.all()
+
+#     def get(self,request):
+#         x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+#         if x_forwarded_for:
+#             ip = x_forwarded_for.split(',')[0]
+#         else:
+#             ip = request.META.get('REMOTE_ADDR')
+#         print(ip)
+#         serializer_class = IpSerializer(data=ip)
+#         serializer_class.save()
+#         print(ip)
+#         return Response(ip)
+    
+class IpViewset(generics.GenericAPIView):
+    """
+    CreateSuperAdminUserAPIView allows super admin creation.
+    only super and staff users will have permission to perform this action.
+    """
+
+    queryset = Ip.objects.all()
+    serializer_class = IpSerializer
+    permission_classes = (AllowAny,)
+
+    def get(self, request):
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0]
+        else:
+            ip = request.META.get('REMOTE_ADDR')
+        print(ip)
+        serializer = self.serializer_class(data={"ip":ip})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        user_data = serializer.data
+        return Response("OK")
+ 
+@api_view(['GET'])
+def GetIP(request):
+    var = Ip.objects.all()
+    serializer = IpSerializer(var, many = True)
+    return Response(serializer.data)
+
+# @api_view(['GET'])
+# def GetIP(request):
+#     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+
+#     if x_forwarded_for:
+#         ip = x_forwarded_for.split(',')[0]
+#     else:
+#         ip = request.META.get('REMOTE_ADDR')
+#     #Ip.objects.create(ip)
+#     print(ip)
+#     return Response("Blank")
 
 def index(request):
     allProds = []
@@ -183,6 +244,4 @@ def updateProduct(request, pk):
 def deleteProduct(request, pk):
     product = Product.objects.get(id=pk)
     product.delete()
-
     return Response('Items delete successfully!')
-    
