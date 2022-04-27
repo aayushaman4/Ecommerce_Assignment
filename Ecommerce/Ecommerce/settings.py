@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-9vpxnuo-3l8@u1-70mc-y_!35^b2j9kcao3xu_(i26yb&ba2nv
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['*', "https://raw.githubusercontent.com/aayushaman4/Track.github.io/main/Listen.js"]
 
 
 # Application definition

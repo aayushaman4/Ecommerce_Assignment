@@ -6,6 +6,7 @@ from math import ceil
 import json
 from django.contrib.auth.models import User
 from django.contrib.auth  import authenticate,  login, logout
+import uuid
 from rest_framework.views import APIView
 from rest_framework import viewsets, generics
 from rest_framework.response import Response
@@ -43,20 +44,26 @@ class IpViewset(generics.GenericAPIView):
     serializer_class = IpSerializer
     permission_classes = (AllowAny,)
 
-    def get(self, request):
+    def pid_generator(self, ip):
+        return uuid.uuid5(uuid.NAMESPACE_OID, ip)
+ 
+    def get_ip(self, request):
         x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
         if x_forwarded_for:
             ip = x_forwarded_for.split(',')[0]
         else:
             ip = request.META.get('REMOTE_ADDR')
         print(ip)
-        serializer = self.serializer_class(data={"ip":ip})
+        return ip
+
+    def get(self, request):
+        ip = self.get_ip(request)
+        pid = self.pid_generator(ip)
+        serializer = self.serializer_class(data={"pid": str(pid), "ip":ip})
         serializer.is_valid(raise_exception=True)
         serializer.save()
-
-        user_data = serializer.data
-        return Response("OK")
- 
+        return Response(serializer.data)
+    
 @api_view(['GET'])
 def GetIP(request):
     var = Ip.objects.all()

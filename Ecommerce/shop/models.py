@@ -54,7 +54,8 @@ class Profile(models.Model):
         return str(self.user)
 
 class Ip(models.Model):
+    pid = models.CharField(max_length=100)
     ip = models.GenericIPAddressField(null=True)
-
+    date_detail = models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return str(self.ip)
